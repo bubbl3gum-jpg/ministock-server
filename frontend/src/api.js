@@ -22,6 +22,18 @@ async function handleResponse(res) {
   return data;
 }
 
+export async function login({ email, password }) {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include", // keep if your backend uses cookies/sessions
+    body: JSON.stringify({ email, password }),
+  });
+
+  return handleResponse(res);
+}
+
+
 export async function getItems(search) {
   const url = search
     ? `${API_BASE}/api/items?search=${encodeURIComponent(search)}`

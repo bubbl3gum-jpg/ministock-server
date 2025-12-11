@@ -118,12 +118,11 @@ export default function Dashboard() {
   }
 
   return (
-    // This whole div is the centered card (App.jsx centers it)
-    <div className="w-full max-w-5xl bg-black/25 border border-white/20 rounded-3xl shadow-2xl backdrop-blur-2xl px-8 py-10 space-y-8 text-white">
+    <div className="bubblebiz-card">
       {/* HEADER */}
       <header className="border-b border-white/10 pb-6 mb-2">
         <h1 className="text-4xl md:text-5xl font-bold mb-3">
-          BubbleBiz Inventory
+          MiniStock Inventory
         </h1>
         <p className="text-sm md:text-base text-white/80">
           Live inventory dashboard – backed by your Express + SQLite server.
