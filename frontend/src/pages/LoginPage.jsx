@@ -33,7 +33,7 @@ export default function LoginPage({ onLoggedIn }) {
   return (
     <div className="bubblebiz-page min-h-screen flex items-center justify-center px-4">
       <div className="bubblebiz-card w-full max-w-md">
-        <h1 className="bubblebiz-title mb-2 text-center">BubbleBiz Login</h1>
+        <h1 className="bubblebiz-title mb-2 text-center">MiniStock Login</h1>
         <p className="bubblebiz-subtitle mb-6 text-center">
           Sign in to manage your inventory
         </p>

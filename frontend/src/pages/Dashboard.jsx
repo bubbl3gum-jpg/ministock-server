@@ -244,24 +244,24 @@ export default function Dashboard() {
                         index % 2 === 0 ? "bg-white/0" : "bg-white/[0.03]"
                       }`}
                     >
-                      <td className="px-6 py-3 align-middle">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{item.name}</span>
-                          {low && (
-                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-500/30 text-red-100 border border-red-400/60">
-                              Low stock
-                            </span>
-                          )}
-                        </div>
+                     <td className="px-6 py-3 align-middle">
+                        <span className="font-medium">{item.name}</span>
                       </td>
+
                       <td className="px-6 py-3 align-middle">
                         <span className="inline-flex items-center rounded-full bg-white/5 px-3 py-1 text-xs border border-white/10">
                           {item.category || "Uncategorized"}
                         </span>
                       </td>
-                      <td className="px-6 py-3 text-right align-middle">
-                        {stock}
-                      </td>
+
+                      <td
+  className={`px-6 py-3 text-right align-middle ${
+    low ? "low-stock-text" : ""
+  }`}
+>
+  {stock}
+</td>
+
                       <td className="px-6 py-3 text-right align-middle">
                         {restock}
                       </td>
