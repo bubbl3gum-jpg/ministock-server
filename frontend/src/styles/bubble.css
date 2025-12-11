@@ -1,0 +1,232 @@
+/* bubble.css */
+
+.bubble-root {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #6dd5ed 0%, #f779a1 100%);
+  display: flex;
+  flex-direction: column; /* Allow content to stack */
+  align-items: center; /* Center horizontally */
+  justify-content: flex-start; /* Align to top by default */
+  position: relative;
+  padding: 2rem 1rem; /* Add some padding around content */
+  box-sizing: border-box;
+}
+
+/* For pages that need content perfectly centered (e.g., login/landing) */
+.bubble-layout-centered {
+  justify-content: center;
+}
+
+/* Main white card */
+.bubble-container {
+  background: #fff;
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 2.5rem 3rem;
+  width: min(90vw, 420px);
+  text-align: left; /* Default text alignment for cards */
+  position: relative;
+  z-index: 1;
+}
+
+/* Wrapper for content inside bubble-root to allow centering */
+.bubble-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 800px; /* Max width for overall content */
+  position: relative; /* Ensure it's above bubbles */
+  z-index: 1;
+}
+
+/* Tailwind-style inputs but in CSS so you can reuse the className */
+.bubble-input {
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem 1.1rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+/* Smaller input for adjustments */
+.bubble-input-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.bubble-input:focus {
+  border-color: #6dd5ed;
+  box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.35);
+}
+
+/* Button from your design */
+.bubble-btn {
+  background: linear-gradient(90deg, #6dd5ed 0%, #f779a1 100%);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.8rem 2rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(247, 121, 161, 0.25);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.bubble-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 32px rgba(109, 213, 237, 0.25);
+}
+
+/* Background bubbles */
+.bubbles {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.25;
+  background: linear-gradient(135deg, #6dd5ed 0%, #f779a1 100%);
+  animation: float 8s infinite ease-in-out;
+}
+
+.bubble1 { width: 120px; height: 120px; left: 10vw; top: 20vh; animation-delay: 0s; }
+.bubble2 { width: 80px; height: 80px; left: 70vw; top: 10vh; animation-delay: 2s; }
+.bubble3 { width: 60px; height: 60px; left: 50vw; top: 70vh; animation-delay: 4s; }
+.bubble4 { width: 100px; height: 100px; left: 80vw; top: 60vh; animation-delay: 1s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.1); }
+}
+
+/* --- Card & Content --- */
+.bubble-card {
+  background: #fff;
+  border-radius: 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 2rem 2.5rem;
+  width: 100%;
+  max-width: 800px; /* Max width for dashboard cards */
+  text-align: left;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 1.5rem;
+}
+
+/* Smaller card for login/landing */
+.bubble-card-sm {
+  max-width: 420px;
+  text-align: center;
+}
+
+.bubble-card h1, .bubble-card h2 {
+  color: #3a8dde;
+  letter-spacing: 0.5px;
+  margin-top: 0;
+}
+
+.bubble-card h1 {
+  font-size: 2.2rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.bubble-card h2 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid #f0f4f8;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* --- Forms & Buttons --- */
+.bubble-form {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-items: end;
+}
+
+.bubble-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* --- Table --- */
+.bubble-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.bubble-table th, .bubble-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.bubble-table th {
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.bubble-table tbody tr:hover {
+  background-color: #f7fafc;
+}
+
+/* Low Stock Highlight */
+.low-stock-row {
+  background-color: #ffebeb; /* Light red background */
+}
+
+.low-stock-badge {
+  display: inline-block;
+  background-color: #e74c3c;
+  color: white;
+  padding: 0.2em 0.6em;
+  border-radius: 999px;
+  font-size: 0.75em;
+  margin-left: 0.5em;
+  font-weight: 600;
+}
+
+/* Category Pill Badge */
+.category-pill {
+  display: inline-block;
+  background-color: #e0f2f7; /* Light blue tint */
+  color: #3a8dde;
+  padding: 0.2em 0.8em;
+  border-radius: 999px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+/* Adjust Panel */
+.adjust-panel {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid #eee;
+  margin-top: 0.5rem;
+}
+
+.bubble-btn-cancel {
+  background: #ccc;
+  color: #333;
+  box-shadow: none;
+}
+.bubble-btn-cancel:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
