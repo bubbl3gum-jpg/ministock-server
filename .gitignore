@@ -1,5 +1,41 @@
+<<<<<<< HEAD
 .local/
 venv/
 .venv/
 __pycache__/
 node_modules/
+=======
+# Ignore ALL node_modules in repo (root + backend + frontend + future)
+node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+server.log
+
+# Build output
+dist/
+build/
+out/
+coverage/
+.vite/
+
+# Env/config
+.env
+.env.local
+.env.*.local
+
+# SQLite databases
+*.sqlite
+*.db
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+>>>>>>> 5a9bac9 (updated stock adjustment system and added delete row button)
