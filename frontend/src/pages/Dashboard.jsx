@@ -24,6 +24,12 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
 
+  // --- LOGOUT HANDLER (This was missing!) ---
+  function handleLogout() {
+    localStorage.removeItem("token");
+    window.location.reload();
+  }
+
   // helper to load items
   async function refreshItems(searchTerm) {
     try {
@@ -120,13 +126,23 @@ export default function Dashboard() {
   return (
     <div className="bubblebiz-card">
       {/* HEADER */}
-      <header className="border-b border-white/10 pb-6 mb-2">
-        <h1 className="text-4xl md:text-5xl font-bold mb-3">
-          MiniStock Inventory
-        </h1>
-        <p className="text-sm md:text-base text-white/80">
-          Live inventory dashboard – backed by your Express + SQLite server.
-        </p>
+      <header className="border-b border-white/10 pb-6 mb-2 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">
+            MiniStock Inventory
+          </h1>
+          <p className="text-sm md:text-base text-white/80">
+            Live inventory dashboard – backed by your Express + SQLite server.
+          </p>
+        </div>
+        
+        {/* LOGOUT BUTTON (Now inside the header) */}
+        <button
+          onClick={handleLogout}
+          className="bg-red-500/20 hover:bg-red-500/40 border border-red-500/50 text-red-100 px-6 py-2 rounded-full font-semibold transition text-sm"
+        >
+          Sign Out
+        </button>
       </header>
 
       {/* ERROR BANNER */}
@@ -244,7 +260,7 @@ export default function Dashboard() {
                         index % 2 === 0 ? "bg-white/0" : "bg-white/[0.03]"
                       }`}
                     >
-                     <td className="px-6 py-3 align-middle">
+                      <td className="px-6 py-3 align-middle">
                         <span className="font-medium">{item.name}</span>
                       </td>
 
@@ -255,12 +271,12 @@ export default function Dashboard() {
                       </td>
 
                       <td
-  className={`px-6 py-3 text-right align-middle ${
-    low ? "low-stock-text" : ""
-  }`}
->
-  {stock}
-</td>
+                        className={`px-6 py-3 text-right align-middle ${
+                          low ? "low-stock-text" : ""
+                        }`}
+                      >
+                        {stock}
+                      </td>
 
                       <td className="px-6 py-3 text-right align-middle">
                         {restock}

@@ -1,155 +1,87 @@
-// server/api.js
-
 const express = require('express');
 const router = express.Router();   
-
-// --- Module Imports ---
-const db = require('./db');
+const { db, addItem, getItems, updateItem, deleteItem } = require('./db');
 const { v4: uuidv4 } = require('uuid'); 
+const { authenticateToken } = require('./auth'); // use auth middleware
 
 // ----------------------------------------------------------------
-// ITEM ROUTES (NO AUTHENTICATION REQUIRED)
+// ITEM ROUTES (USER-SPECIFIC)
 // ----------------------------------------------------------------
 
-// GET /api/items: List all items (with optional search)
-router.get('/items', (req, res) => {
+// GET /api/items: List all items for logged-in user (with optional search)
+router.get('/items', authenticateToken, (req, res) => {
+    const userId = req.user.userId;
     const searchTerm = req.query.search;
-    let sql = 'SELECT * FROM Item';
-    let params = [];
 
-    if (searchTerm) {
-        // Search by name OR category
-        sql += ' WHERE name LIKE ? OR category LIKE ?';
-        const likeTerm = `%${searchTerm}%`;
-        params.push(likeTerm, likeTerm);
-    }
-    
-    sql += ' ORDER BY name';
-
-    db.all(sql, params, (err, rows) => {
+    getItems(userId, (err, rows) => {
         if (err) {
             console.error('❌ GET /items error:', err.message);
             return res.status(500).json({ status: 'error', message: 'Failed to fetch items: ' + err.message });
         }
-        console.log(`✅ GET /items: Retrieved ${rows ? rows.length : 0} items`);
-        res.json({ status: 'ok', data: rows || [] });
+
+        let filtered = rows;
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = rows.filter(r => r.name.toLowerCase().includes(term) || r.category.toLowerCase().includes(term));
+        }
+
+        console.log(`✅ GET /items: Retrieved ${filtered.length} items for user ${userId}`);
+        res.json({ status: 'ok', data: filtered });
     });
 });
 
-
-// POST /api/items: Create a new item
-router.post('/items', (req, res) => {
+// POST /api/items: Create a new item for logged-in user
+router.post('/items', authenticateToken, (req, res) => {
+    const userId = req.user.userId;
     const { name, category, restock_level } = req.body;
     const id = uuidv4();
-    const currentTimestamp = new Date().toISOString();
 
     if (!name || !restock_level) {
-        console.warn('⚠️  POST /items: Missing required fields - name or restock_level');
         return res.status(400).json({ status: 'error', message: 'Name and Restock Level are required.' });
     }
 
-    const sql = `
-        INSERT INTO Item (id, name, category, stock_quantity, restock_level, last_updated) 
-        VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const params = [id, name, category || 'Uncategorized', 0, restock_level, currentTimestamp];
-
-    db.run(sql, params, function(err) {
-        if (err) {
-    console.error('❌ POST /items error:', err.message);
-    // Check if it's a duplicate name error
-    if (err.message.includes('UNIQUE constraint failed')) {
-        return res
-            .status(409)
-            .json({ status: 'error', message: 'Item name already exists' });
-    }
-    return res
-        .status(500)
-        .json({ status: 'error', message: 'Failed to create item: ' + err.message });
-}
-
-        
-        console.log(`✅ POST /items: Created item "${name}" with ID ${id}`);
-        res.status(201).json({ 
-            status: 'ok', 
-            message: 'Item created successfully.', 
-            data: { id, name, category: category || 'Uncategorized', stock_quantity: 0, restock_level } 
-        });
-    });
+    addItem(userId, id, name, category || 'Uncategorized', 0, restock_level);
+    console.log(`✅ POST /items: Created item "${name}" for user ${userId} with ID ${id}`);
+    res.status(201).json({ status: 'ok', message: 'Item created successfully.', data: { id, name, category: category || 'Uncategorized', stock_quantity: 0, restock_level } });
 });
 
-// POST /api/items/:id/adjust: Update stock quantity
-router.post('/items/:id/adjust', (req, res) => {
+// POST /api/items/:id/adjust: Update stock for user-specific item
+router.post('/items/:id/adjust', authenticateToken, (req, res) => {
+    const userId = req.user.userId;
     const itemId = req.params.id;
-    // The frontend will now send change_amount (positive for restock, negative for sale) and reason
     const { change_amount } = req.body;
     const change = parseInt(change_amount, 10);
 
     if (isNaN(change) || change === 0) {
-        console.warn(`⚠️  POST /items/:id/adjust: Invalid change_amount for item ${itemId}`);
         return res.status(400).json({ status: 'error', message: 'A valid, non-zero change amount is required.' });
     }
 
-    // 1. Get current stock
-    db.get('SELECT stock_quantity FROM Item WHERE id = ?', [itemId], (err, row) => {
-        if (err) {
-            console.error(`❌ POST /items/:id/adjust error (GET): ${err.message}`);
-            return res.status(500).json({ status: 'error', message: 'Database error: ' + err.message });
-        }
-        
-        if (!row) {
-            console.warn(`⚠️  POST /items/:id/adjust: Item not found - ${itemId}`);
-            return res.status(404).json({ status: 'error', message: 'Item not found.' });
-        }
-
-        const currentStock = row.stock_quantity;
-
-        // Check for sufficient stock if it's a sale (negative change_amount)
-        if (change < 0 && currentStock < Math.abs(change)) {
-            console.warn(`⚠️  POST /items/:id/adjust: Insufficient stock for item ${itemId}. Current: ${currentStock}, Sale Amount: ${Math.abs(change)}`);
-            return res.status(400).json({ status: 'error', message: `Stock not enough. Only ${currentStock} available.` });
-        }
+    db.get('SELECT stock_quantity FROM Item WHERE id = ? AND user_id = ?', [itemId, userId], (err, row) => {
+        if (err) return res.status(500).json({ status: 'error', message: err.message });
+        if (!row) return res.status(404).json({ status: 'error', message: 'Item not found.' });
 
         const newStock = row.stock_quantity + change;
+        if (newStock < 0) return res.status(400).json({ status: 'error', message: 'Insufficient stock.' });
 
-        const currentTimestamp = new Date().toISOString();
-
-        // 2. Update the stock quantity
-        db.run('UPDATE Item SET stock_quantity = ?, last_updated = ? WHERE id = ?', [newStock, currentTimestamp, itemId], (updateErr) => {
-            if (updateErr) {
-                console.error(`❌ POST /items/:id/adjust error (UPDATE): ${updateErr.message}`);
-                return res.status(500).json({ status: 'error', message: 'Database error: ' + updateErr.message });
-            }
-
-            console.log(`✅ [STOCK ADJUSTMENT] Item: ${itemId}, Change: ${change}, Old Stock: ${row.stock_quantity}, New Stock: ${newStock}`);
-
-            // Send back the updated item data
-            const updatedItem = { ...row, stock_quantity: newStock, id: itemId };
-            res.json({ status: 'ok', message: 'Stock adjusted successfully.', data: updatedItem });
-        });
+        updateItem(userId, itemId, { stock_quantity: newStock });
+        console.log(`✅ [STOCK ADJUSTMENT] Item ${itemId}, Change: ${change}, New Stock: ${newStock} for user ${userId}`);
+        res.json({ status: 'ok', message: 'Stock adjusted successfully.', data: { id: itemId, stock_quantity: newStock } });
     });
 });
 
-// DELETE /api/items/:id: Delete an item (Optional for demo, but good practice)
-router.delete('/items/:id', (req, res) => {
+// DELETE /api/items/:id: Delete item for logged-in user
+router.delete('/items/:id', authenticateToken, (req, res) => {
+    const userId = req.user.userId;
     const itemId = req.params.id;
 
-    db.run('DELETE FROM Item WHERE id = ?', [itemId], function(err) {
-        if (err) {
-            console.error(`❌ DELETE /items/:id error: ${err.message}`);
-            return res.status(500).json({ status: 'error', message: 'Database error: ' + err.message });
-        }
-        
-        if (this.changes === 0) {
-            console.warn(`⚠️  DELETE /items/:id: Item not found - ${itemId}`);
-            return res.status(404).json({ status: 'error', message: 'Item not found.' });
-        }
-        
-        console.log(`✅ DELETE /items/:id: Item ${itemId} deleted successfully.`);
-        // Return 204 No Content on successful delete (no response body)
+    db.get('SELECT id FROM Item WHERE id = ? AND user_id = ?', [itemId, userId], (err, row) => {
+        if (err) return res.status(500).json({ status: 'error', message: err.message });
+        if (!row) return res.status(404).json({ status: 'error', message: 'Item not found.' });
+
+        deleteItem(userId, itemId);
+        console.log(`✅ DELETE /items/:id: Item ${itemId} deleted for user ${userId}`);
         res.sendStatus(204);
     });
 });
-
 
 module.exports = router;
