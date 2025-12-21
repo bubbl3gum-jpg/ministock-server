@@ -1,0 +1,5 @@
+{
+  "appId": "com.ministock.app",
+  "appName": "Ministock",
+  "webDir": "frontend/dist"
+}
